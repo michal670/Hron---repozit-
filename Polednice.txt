@@ -1,0 +1,26 @@
+soubor = "polednicee.txt"
+
+with open(soubor, "r" ; encoding-"utf-8") as f:
+    text = f.read()
+
+# 1. Počet slov
+slova = text.split()
+print ("Počet slov v textu:", len (slova))
+
+# 2. Frekvence slov
+pocty_slov = {}
+for slovo in slova:
+    slovo = slovo. lower() .strip("•, !?;:\"") # Doporučuji očistit od interpunkce
+    pocty_slov[slovo] = pocty_slov.get(slovo, 0) + 1
+
+# 3. Frekvence písmen
+# Odstraníme bílé znaky (mezery, konce řádků, tabulátory)
+text_bez_mezer = "".join(text.split())
+pocty_pismen = {} 
+
+
+for pismeno in text_bez_mezer:
+    pismeno = pismeno. lower() # sjednotime velikost
+    pocty_pismen [pismeno] = pocty_pismen. get (pismeno, 0) + 1
+
+print ("Počty pismen:", pocty_pismen)
