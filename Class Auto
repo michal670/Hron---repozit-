@@ -1,0 +1,91 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOdWEae+gMU1Y4eyqo8rfK7",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/michal670/Hron---repozit-/blob/main/Class%20Auto\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "lwojKVDbTAjM",
+        "outputId": "0b70be64-bb1e-426d-ef36-cc927da1faad"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ Stroj řada 3 (Octavia) byl vyroben a připraven k jízdě.\n",
+            "✅ Stroj řada 3 (Superb) byl vyroben a připraven k jízdě.\n",
+            "✅ Stroj řada 3 (Octavia) byl vyroben a připraven k jízdě.\n",
+            "✅ Stroj řada 3 (Superb) byl vyroben a připraven k jízdě.\n",
+            "------------------------------\n",
+            "📈 Octavia zrychluje na 210 km/h.\n",
+            "📈 Superb zrychluje na 230 km/h.\n"
+          ]
+        }
+      ],
+      "source": [
+        "class Auto:\n",
+        "    def __init__(self, cislo, typ, max_rychlost):\n",
+        "        self.cislo = cislo\n",
+        "        self.typ = typ\n",
+        "        self.max_rychlost = max_rychlost\n",
+        "        self.aktualni_rychlost = 0\n",
+        "        print(f\"✅ Stroj {self.cislo} ({self.typ}) byl vyroben a připraven k jízdě.\")\n",
+        "\n",
+        "    def zrychli(self, o_kolik):\n",
+        "        nova_rychlost = self.aktualni_rychlost + o_kolik\n",
+        "        if nova_rychlost <= self.max_rychlost:\n",
+        "            self.aktualni_rychlost = nova_rychlost\n",
+        "            print(f\"📈 {self.typ} zrychluje na {self.aktualni_rychlost} km/h.\")\n",
+        "        else:\n",
+        "            self.aktualni_rychlost = self.max_rychlost\n",
+        "            print(f\"⚠️ Pozor! Dosáhli jsme konstrukční rychlosti {self.max_rychlost} km/h!\")\n",
+        "\n",
+        "    def trub(self):\n",
+        "            print(f\"📢 Auto {self.cislo} Troubí: TÚÚÚÚÚÚÚT!\")\n",
+        "\n",
+        "\n",
+        "# Vytvoříme dva konkrétní modely aut\n",
+        "octavia = Auto(\"řada 3\", \"Octavia\", 230)\n",
+        "superb = Auto(\"řada 3\", \"Superb\", 235)\n",
+        "\n",
+        "# Pro simulaci `octavia` a `superb` vytvoříme nové instance třídy Auto\n",
+        "octavia = Auto(\"řada 3\", \"Octavia\", 250)\n",
+        "superb = Auto(\"řada 3\", \"Superb\", 250)\n",
+        "\n",
+        "# Vyzkoušíme jejich funkce\n",
+        "print(\"-\" * 30)\n",
+        "octavia.zrychli(210)\n",
+        "superb.zrychli(230) # Tady by to mělo vyhodit varování o max. rychlosti.trub()"
+      ]
+    }
+  ]
+}
