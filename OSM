@@ -1,0 +1,74 @@
+import heapq
+
+def dijkstra(graf, start, cil):
+    """
+    Nalezne nejkratší cestu v grafu z bodu 'start' do bodu 'cil'.
+    
+    Argumenty:
+    graf: Slovník, kde klíč je uzel a hodnota je seznam dvojic (sousední_uzel, váha_hrany).
+    start: Výchozí uzel.
+    cil: Cílový uzel.
+    
+    Vrací:
+    Dvojici (nejkratší_vzdálenost, seznam_uzlů_na_cestě). Pokud cesta neexistuje, vrací (float('inf'), []).
+    """
+    # Inicializace vzdáleností pro všechny uzly na nekonečno
+    vzdalenosti = {uzel: float('inf') for uzel in graf}
+    vzdalenosti[start] = 0
+    
+    # Slovník pro sledování předchůdců pro rekonstrukci cesty
+    predchudci = {uzel: None for uzel in graf}
+    
+    # Prioritní fronta ukládá dvojice (aktuální_vzdálenost, uzel)
+    prioritni_fronta = [(0, start)]
+    
+    while prioritni_fronta:
+        aktualni_vzdalenost, aktualni_uzel = heapq.heappop(prioritni_fronta)
+        
+        # Pokud jsme dosáhli cíle, můžeme ukončit hledání
+        if aktualni_uzel == cil:
+            break
+            
+        # Pokud jsme našli delší cestu do již zpracovaného uzlu, přeskočíme ho
+        if aktualni_vzdalenost > vzdalenosti[aktualni_uzel]:
+            continue
+            
+        # Procházení všech sousedů aktuálního uzlu
+        for soused, vaha in graf.get(aktualni_uzel, []):
+            nova_vzdalenost = aktualni_vzdalenost + vaha
+            
+            # Pokud je nová cesta kratší, aktualizujeme data
+            if nova_vzdalenost < vzdalenosti[soused]:
+                vzdalenosti[soused] = nova_vzdalenost
+                predchudci[soused] = aktualni_uzel
+                heapq.heappush(prioritni_fronta, (nova_vzdalenost, soused))
+                
+    # Rekonstrukce výsledné cesty od cíle k počátku
+    cesta = []
+    uzel = cil
+    while uzel is not None:
+        cesta.append(uzel)
+        uzel = predchudci[uzel]
+    cesta.reverse()
+    
+    # Pokud cesta nezačíná startovním uzlem, cíl je nedosažitelný
+    if cesta[0] != start:
+        return float('inf'), []
+        
+    return vzdalenosti[cil], cesta
+
+# --- PŘÍKLAD POUŽITÍ ---
+# Definice testovacího grafu (křižovatky a délky silnic)
+silnicni_sit = {
+    'A': [('B', 4), ('C', 2)],
+    'B': [('A', 4), ('C', 1), ('D', 5)],
+    'C': [('A', 2), ('B', 1), ('D', 8), ('E', 10)],
+    'D': [('B', 5), ('C', 8), ('E', 2), ('Z', 6)],
+    'E': [('C', 10), ('D', 2), ('Z', 3)],
+    'Z': [('D', 6), ('E', 3)]
+}
+
+delka, trasa = dijkstra(silnicni_sit, start='A', cil='Z')
+
+print(f"Nejkratší vzdálenost: {delka}")
+print(f"Trasa: {' -> '.join(trasa)}")
