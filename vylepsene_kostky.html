@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderní Hrací Kostky</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Jemný gradient na pozadí pro moderní vzhled */
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        }
+
+        /* Vzhled samotné kostky */
+        .die {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 20px;
+            /* Realistický 3D stín */
+            box-shadow: 
+                5px 5px 15px rgba(0, 0, 0, 0.15), 
+                -5px -5px 15px rgba(255, 255, 255, 0.8),
+                inset 0px 0px 0px 2px rgba(255,255,255,1);
+            
+            /* CSS Grid pro rozložení 3x3 (pro tečky) */
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 16px;
+            gap: 4px;
+        }
+
+        /* Buňka v mřížce kostky (zarovnání tečky na střed buňky) */
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Vzhled tečky */
+        .dot {
+            width: 22px;
+            height: 22px;
+            background-color: #1e293b; /* Tmavá břidlicová barva */
+            border-radius: 50%;
+            /* Vnitřní stín tečky pro efekt vyhloubení */
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* CSS Animace: Třesení a rotace kostky při hodu */
+        @keyframes roll-animation {
+            0% { transform: rotate(0deg) scale(1) translateY(0); }
+            15% { transform: rotate(25deg) scale(1.1) translateY(-15px); }
+            30% { transform: rotate(-25deg) scale(1.1) translateY(-25px); }
+            45% { transform: rotate(45deg) scale(1.05) translateY(-10px); }
+            60% { transform: rotate(-45deg) scale(1.05) translateY(0); }
+            75% { transform: rotate(180deg) scale(1) translateY(5px); }
+            100% { transform: rotate(360deg) scale(1) translateY(0); }
+        }
+
+        /* Třídy spouštějící animace */
+        .rolling {
+            animation: roll-animation 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        /* Mírně zpožděná animace pro druhou kostku, aby to vypadalo realističtěji */
+        .rolling-delayed {
+            animation: roll-animation 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.05s;
+        }
+
+        /* Efekt stlačení tlačítka */
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl max-w-md w-full text-center border border-gray-100">
+        
+        <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Hrací kostky</h1>
+        <p class="text-slate-500 mb-8">Hoďte kostkami a zkuste své štěstí!</p>
+        
+        <div class="flex flex-row gap-8 justify-center items-center mb-8">
+            <!-- První kostka -->
+            <div id="die1" class="die">
+                <!-- Obsah (tečky) se vygeneruje pomocí JavaScriptu -->
+            </div>
+            
+            <!-- Druhá kostka -->
+            <div id="die2" class="die">
+                <!-- Obsah (tečky) se vygeneruje pomocí JavaScriptu -->
+            </div>
+        </div>
+        
+        <div id="resultBox" class="h-20 flex flex-col justify-center items-center mb-6">
+            <p id="resultText" class="text-lg text-slate-600 transition-all">Klikněte na tlačítko pro hod.</p>
+        </div>
+        
+        <button id="rollBtn" onclick="rollDice()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+            Hodit kostkami
+        </button>
+    </div>
+
+    <script>
+        // Reprezentace teček na kostce (3x3 mřížka)
+        // 1 znamená zobrazenou tečku, 0 znamená skrytou tečku
+        const dotPatterns = {
+            1: [0, 0, 0, 
+                0, 1, 0, 
+                0, 0, 0],
+            
+            2: [1, 0, 0, 
+                0, 0, 0, 
+                0, 0, 1],
+            
+            3: [1, 0, 0, 
+                0, 1, 0, 
+                0, 0, 1],
+            
+            4: [1, 0, 1, 
+                0, 0, 0, 
+                1, 0, 1],
+            
+            5: [1, 0, 1, 
+                0, 1, 0, 
+                1, 0, 1],
+            
+            6: [1, 0, 1, 
+                1, 0, 1, 
+                1, 0, 1]
+        };
+
+        // Funkce pro počáteční vykreslení mřížky v kostce (9 prázdných buněk)
+        function initDie(id) {
+            const die = document.getElementById(id);
+            die.innerHTML = ''; // Vyčištění obsahu
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                
+                const dot = document.createElement('div');
+                // Standardně nastavíme průhlednost na 0 (skrytá tečka)
+                dot.className = 'dot opacity-0';
+                
+                cell.appendChild(dot);
+                die.appendChild(cell);
+            }
+        }
+
+        // Funkce pro zobrazení správného počtu teček podle hodnoty
+        function updateDie(id, value) {
+            const die = document.getElementById(id);
+            const cells = die.children;
+            const pattern = dotPatterns[value];
+            
+            for (let i = 0; i < 9; i++) {
+                const dot = cells[i].firstChild;
+                if (pattern[i] === 1) {
+                    dot.classList.remove('opacity-0');
+                    dot.classList.add('opacity-100');
+                } else {
+                    dot.classList.remove('opacity-100');
+                    dot.classList.add('opacity-0');
+                }
+            }
+        }
+
+        // Hlavní funkce spuštěná po kliknutí na tlačítko
+        function rollDice() {
+            const btn = document.getElementById('rollBtn');
+            const die1 = document.getElementById('die1');
+            const die2 = document.getElementById('die2');
+            const resultText = document.getElementById('resultText');
+            
+            // Zakázat tlačítko během animace
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            // Skrýt předchozí výsledek textu
+            resultText.style.opacity = 0;
+
+            // Spustit CSS animace rotace
+            die1.classList.add('rolling');
+            die2.classList.add('rolling-delayed');
+
+            // Vyčkat na konec animace (cca 600-700ms)
+            setTimeout(() => {
+                // Vygenerovat náhodná čísla 1 až 6 pro obě kostky
+                const val1 = Math.floor(Math.random() * 6) + 1;
+                const val2 = Math.floor(Math.random() * 6) + 1;
+                const total = val1 + val2;
+
+                // Aktualizovat zobrazení teček
+                updateDie('die1', val1);
+                updateDie('die2', val2);
+
+                // Odebrat animační třídy, aby se daly spustit znovu při dalším hodu
+                die1.classList.remove('rolling');
+                die2.classList.remove('rolling-delayed');
+
+                // Aktualizovat a zobrazit text s výsledkem
+                resultText.innerHTML = `Padlo ti <span class="font-bold text-indigo-600">${val1}</span> a <span class="font-bold text-indigo-600">${val2}</span>.<br><span class="text-2xl font-black text-slate-800 mt-1 block">Celkem: ${total}</span>`;
+                resultText.style.opacity = 1;
+
+                // Znovu povolit tlačítko
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }, 650); // Časovač odpovídá zhruba délce animace v CSS
+        }
+
+        // Inicializovat kostky při načtení stránky a rovnou nastavit výchozí hodnoty (např. 6 a 6)
+        window.onload = function() {
+            initDie('die1');
+            initDie('die2');
+            updateDie('die1', 6);
+            updateDie('die2', 6);
+        };
+    </script>
+</body>
+</html>
